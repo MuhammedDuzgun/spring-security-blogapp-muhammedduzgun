@@ -2,12 +2,15 @@ package com.demo.springsecurityblogappmuhammedduzgun.controller;
 
 import com.demo.springsecurityblogappmuhammedduzgun.request.post.CreatePostRequest;
 import com.demo.springsecurityblogappmuhammedduzgun.response.post.PostResponse;
+import com.demo.springsecurityblogappmuhammedduzgun.security.BlogUserDetails;
 import com.demo.springsecurityblogappmuhammedduzgun.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.AuthenticationException;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,10 +25,10 @@ public class PostController {
     }
 
     //Create Post
-    //TODO : User Auth
     @PostMapping
-    public ResponseEntity<PostResponse> createPost(@Valid @RequestBody CreatePostRequest createPostRequest) {
-        PostResponse createdPost = postService.createPost(createPostRequest);
+    public ResponseEntity<PostResponse> createPost(@AuthenticationPrincipal BlogUserDetails userDetails,
+                                                   @Valid @RequestBody CreatePostRequest createPostRequest) throws AuthenticationException {
+        PostResponse createdPost = postService.createPost(createPostRequest, userDetails);
         return new ResponseEntity<>(createdPost, HttpStatus.CREATED);
     }
 
@@ -45,8 +48,9 @@ public class PostController {
 
     //Delete Post By ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePostById(@PathVariable("id") UUID id) {
-        postService.deletePostById(id);
+    public ResponseEntity<Void> deletePostById(@AuthenticationPrincipal BlogUserDetails userDetails,
+                                               @PathVariable("id") UUID id) {
+        postService.deletePostById(userDetails, id);
         return ResponseEntity.noContent().build();
     }
 
